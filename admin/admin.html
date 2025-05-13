@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panou de Administrare</title>
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div id="app" class="container mx-auto px-4 py-8">
+      <!-- Login Section -->
+      <div
+        v-if="!isLoggedIn"
+        class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6"
+      >
+        <h2 class="text-2xl font-bold mb-4">Autentificare</h2>
+        <form @submit.prevent="login" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              v-model="email"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Parolă</label
+            >
+            <input
+              type="password"
+              v-model="password"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+          >
+            Conectare
+          </button>
+        </form>
+      </div>
+
+      <!-- Admin Panel -->
+      <div v-else class="space-y-8">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold">Panou de Administrare</h1>
+          <button
+            @click="logout"
+            class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+          >
+            Deconectare
+          </button>
+        </div>
+
+        <!-- Image Management Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-bold mb-4">Gestionare Imagini</h2>
+
+          <!-- Category Selection -->
+          <div class="mb-6 space-y-4">
+            <div class="flex items-center space-x-2">
+              <select
+                v-model="selectedCategory"
+                class="w-full rounded-md border-gray-300 shadow-sm"
+              >
+                <option value="">Selectează o categorie</option>
+                <option
+                  v-for="category in categories"
+                  :key="category"
+                  :value="category"
+                >
+                  {{ category }}
+                </option>
+                <option value="new">+ Adaugă categorie nouă</option>
+              </select>
+              <button
+                v-if="selectedCategory && selectedCategory !== 'new'"
+                @click="deleteCategory"
+                class="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 text-sm"
+              >
+                Șterge Categorie
+              </button>
+            </div>
+
+            <!-- New Category Input -->
+            <div v-if="selectedCategory === 'new'" class="mb-4">
+              <input
+                type="text"
+                v-model="newCategory"
+                placeholder="Nume categorie nouă"
+                class="w-full rounded-md border-gray-300 shadow-sm"
+              />
+              <button
+                @click="addCategory"
+                class="mt-2 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+              >
+                Adaugă Categorie
+              </button>
+            </div>
+
+            <!-- Subcategory Selection -->
+            <div
+              v-if="selectedCategory && selectedCategory !== 'new'"
+              class="flex items-center space-x-2"
+            >
+              <select
+                v-model="selectedSubcategory"
+                class="w-full rounded-md border-gray-300 shadow-sm"
+              >
+                <option value="">Selectează o subcategorie</option>
+                <option
+                  v-for="subcategory in subcategories"
+                  :key="subcategory"
+                  :value="subcategory"
+                >
+                  {{ subcategory }}
+                </option>
+                <option value="new">+ Adaugă subcategorie nouă</option>
+              </select>
+              <button
+                v-if="selectedSubcategory && selectedSubcategory !== 'new'"
+                @click="deleteSubcategory"
+                class="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 text-sm"
+              >
+                Șterge Subcategorie
+              </button>
+            </div>
+
+            <!-- New Subcategory Input -->
+            <div v-if="selectedSubcategory === 'new'" class="mb-4">
+              <input
+                type="text"
+                v-model="newSubcategory"
+                placeholder="Nume subcategorie nouă"
+                class="w-full rounded-md border-gray-300 shadow-sm"
+              />
+              <button
+                @click="addSubcategory"
+                class="mt-2 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+              >
+                Adaugă Subcategorie
+              </button>
+            </div>
+          </div>
+
+          <!-- Image Upload -->
+          <div
+            v-if="selectedCategory && selectedSubcategory && selectedCategory !== 'new' && selectedSubcategory !== 'new'"
+            class="mb-4"
+          >
+            <input
+              type="file"
+              @change="handleImageUpload"
+              accept="image/*"
+              multiple
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+
+          <!-- Images Grid -->
+          <div
+            v-if="selectedCategory && selectedSubcategory && selectedCategory !== 'new' && selectedSubcategory !== 'new'"
+            class="grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
+            <div v-for="image in images" :key="image.id" class="relative group">
+              <img
+                :src="image.url"
+                @click="openImageModal(image)"
+                class="w-full h-48 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+              >
+                <button
+                  @click="deleteImage(image.id)"
+                  class="bg-red-600 text-white p-2 rounded-md hover:bg-red-700"
+                >
+                  Șterge
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Modal -->
+          <div
+            v-if="selectedImage"
+            class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+            @click="closeImageModal"
+          >
+            <div class="relative max-w-4xl max-h-[90vh] p-4">
+              <img
+                :src="selectedImage.url"
+                class="max-w-full max-h-[80vh] object-contain rounded-lg"
+                @click.stop
+              />
+              <button
+                @click="closeImageModal"
+                class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-bold mb-4">Calendar</h2>
+          <div class="aspect-w-16 aspect-h-9">
+            <iframe
+              src="https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_ID"
+              style="border: 0"
+              width="800"
+              height="600"
+              frameborder="0"
+              scrolling="no"
+            >
+            </iframe>
+          </div>
+        </div>
+
+        <!-- Test Database Button -->
+        <button
+          @click="testDatabase"
+          class="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Testează Bază de Date
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAcvzpjbm_80JVI_tKNFJByS45LPRSyDjo",
+        authDomain: "portfolio-site-bfac2.firebaseapp.com",
+        projectId: "portfolio-site-bfac2",
+        storageBucket: "portfolio-site-bfac2.appspot.com",
+        messagingSenderId: "762123902197",
+        appId: "1:762123902197:web:5ff05f88ea5ead852f79bc",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            isLoggedIn: false,
+            email: "",
+            password: "",
+            images: [],
+            currentUser: null,
+            categories: [],
+            subcategories: [],
+            selectedCategory: "",
+            selectedSubcategory: "",
+            newCategory: "",
+            newSubcategory: "",
+            selectedImage: null,
+          };
+        },
+        methods: {
+          async login() {
+            try {
+              const userCredential = await firebase
+                .auth()
+                .signInWithEmailAndPassword(this.email, this.password);
+              this.currentUser = userCredential.user;
+              this.isLoggedIn = true;
+              this.loadCategories();
+            } catch (error) {
+              alert("Eroare la autentificare: " + error.message);
+            }
+          },
+          async logout() {
+            try {
+              await firebase.auth().signOut();
+              this.isLoggedIn = false;
+              this.currentUser = null;
+              this.images = [];
+              this.categories = [];
+              this.subcategories = [];
+            } catch (error) {
+              alert("Eroare la deconectare: " + error.message);
+            }
+          },
+          async loadCategories() {
+            try {
+              const snapshot = await firebase
+                .firestore()
+                .collection("categories")
+                .get();
+              this.categories = snapshot.docs.map((doc) => doc.id);
+            } catch (error) {
+              alert("Eroare la încărcarea categoriilor: " + error.message);
+            }
+          },
+          async loadSubcategories() {
+            if (!this.selectedCategory) return;
+            try {
+              const snapshot = await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .get();
+              this.subcategories = snapshot.docs.map((doc) => doc.id);
+            } catch (error) {
+              alert("Eroare la încărcarea subcategoriilor: " + error.message);
+            }
+          },
+          async loadImages() {
+            if (!this.selectedCategory || !this.selectedSubcategory) return;
+            try {
+              const snapshot = await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .doc(this.selectedSubcategory)
+                .collection("images")
+                .orderBy("uploadedAt", "desc")
+                .get();
+              this.images = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }));
+            } catch (error) {
+              alert("Eroare la încărcarea imaginilor: " + error.message);
+            }
+          },
+          async addCategory() {
+            if (!this.newCategory) return;
+            try {
+              await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.newCategory)
+                .set({});
+              this.categories.push(this.newCategory);
+              this.selectedCategory = this.newCategory;
+              this.newCategory = "";
+            } catch (error) {
+              alert("Eroare la adăugarea categoriei: " + error.message);
+            }
+          },
+          async addSubcategory() {
+            if (!this.newSubcategory || !this.selectedCategory) return;
+            try {
+              await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .doc(this.newSubcategory)
+                .set({});
+
+              // Reîncărcăm subcategoriile
+              await this.loadSubcategories();
+
+              // Selectăm noua subcategorie
+              this.selectedSubcategory = this.newSubcategory;
+              this.newSubcategory = "";
+            } catch (error) {
+              alert("Eroare la adăugarea subcategoriei: " + error.message);
+            }
+          },
+          async handleImageUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            try {
+              // Încărcăm toate fișierele în paralel
+              const uploadPromises = Array.from(files).map((file) => {
+                return new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = async (e) => {
+                    try {
+                      const base64Image = e.target.result;
+                      await firebase
+                        .firestore()
+                        .collection("categories")
+                        .doc(this.selectedCategory)
+                        .collection("subcategories")
+                        .doc(this.selectedSubcategory)
+                        .collection("images")
+                        .add({
+                          url: base64Image,
+                          name: file.name,
+                          uploadedAt:
+                            firebase.firestore.FieldValue.serverTimestamp(),
+                        });
+                      resolve();
+                    } catch (error) {
+                      reject(error);
+                    }
+                  };
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+                });
+              });
+
+              // Așteptăm să se încarce toate fișierele
+              await Promise.all(uploadPromises);
+
+              // Reîncărcăm imaginile după ce toate s-au încărcat
+              await this.loadImages();
+            } catch (error) {
+              alert("Eroare la încărcarea imaginilor: " + error.message);
+            }
+          },
+          async deleteImage(imageId) {
+            if (!confirm("Sigur doriți să ștergeți această imagine?")) return;
+
+            try {
+              await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .doc(this.selectedSubcategory)
+                .collection("images")
+                .doc(imageId)
+                .delete();
+              this.loadImages();
+            } catch (error) {
+              alert("Eroare la ștergerea imaginii: " + error.message);
+            }
+          },
+          async deleteCategory() {
+            if (
+              !confirm(
+                `Sigur doriți să ștergeți categoria "${this.selectedCategory}" și toate subcategoriile și imaginile asociate?`
+              )
+            )
+              return;
+
+            try {
+              // Ștergem toate subcategoriile și imaginile
+              const subcategoriesSnapshot = await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .get();
+
+              for (const subcategory of subcategoriesSnapshot.docs) {
+                const imagesSnapshot = await subcategory.ref
+                  .collection("images")
+                  .get();
+                for (const image of imagesSnapshot.docs) {
+                  await image.ref.delete();
+                }
+                await subcategory.ref.delete();
+              }
+
+              // Ștergem categoria
+              await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .delete();
+
+              this.categories = this.categories.filter(
+                (c) => c !== this.selectedCategory
+              );
+              this.selectedCategory = "";
+              this.subcategories = [];
+              this.images = [];
+            } catch (error) {
+              alert("Eroare la ștergerea categoriei: " + error.message);
+            }
+          },
+          async deleteSubcategory() {
+            if (
+              !confirm(
+                `Sigur doriți să ștergeți subcategoria "${this.selectedSubcategory}" și toate imaginile asociate?`
+              )
+            )
+              return;
+
+            try {
+              // Ștergem toate imaginile
+              const imagesSnapshot = await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .doc(this.selectedSubcategory)
+                .collection("images")
+                .get();
+
+              for (const image of imagesSnapshot.docs) {
+                await image.ref.delete();
+              }
+
+              // Ștergem subcategoria
+              await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .doc(this.selectedSubcategory)
+                .delete();
+
+              this.subcategories = this.subcategories.filter(
+                (s) => s !== this.selectedSubcategory
+              );
+              this.selectedSubcategory = "";
+              this.images = [];
+            } catch (error) {
+              alert("Eroare la ștergerea subcategoriei: " + error.message);
+            }
+          },
+          openImageModal(image) {
+            this.selectedImage = image;
+          },
+          closeImageModal() {
+            this.selectedImage = null;
+          },
+          async testDatabase() {
+            try {
+              console.log("=== TEST BAZĂ DE DATE ===");
+
+              // Verifică categorii
+              const categoriesSnapshot = await firebase
+                .firestore()
+                .collection("categories")
+                .get();
+              console.log("Categorii:", categoriesSnapshot.size);
+
+              categoriesSnapshot.forEach(async (categoryDoc) => {
+                console.log("Categorie:", categoryDoc.id, categoryDoc.data());
+
+                // Verifică subcategorii
+                const subcategoriesSnapshot = await firebase
+                  .firestore()
+                  .collection("categories")
+                  .doc(categoryDoc.id)
+                  .collection("subcategories")
+                  .get();
+
+                console.log(
+                  "Subcategorii pentru",
+                  categoryDoc.id,
+                  ":",
+                  subcategoriesSnapshot.size
+                );
+
+                subcategoriesSnapshot.forEach(async (subcategoryDoc) => {
+                  console.log(
+                    "Subcategorie:",
+                    subcategoryDoc.id,
+                    subcategoryDoc.data()
+                  );
+
+                  // Verifică imagini
+                  const imagesSnapshot = await firebase
+                    .firestore()
+                    .collection("categories")
+                    .doc(categoryDoc.id)
+                    .collection("subcategories")
+                    .doc(subcategoryDoc.id)
+                    .collection("images")
+                    .get();
+
+                  console.log(
+                    "Imagini pentru",
+                    subcategoryDoc.id,
+                    ":",
+                    imagesSnapshot.size
+                  );
+
+                  imagesSnapshot.forEach((imageDoc) => {
+                    console.log("Imagine:", imageDoc.id, imageDoc.data());
+                  });
+                });
+              });
+            } catch (error) {
+              console.error("Eroare la testarea bazei de date:", error);
+            }
+          },
+        },
+        watch: {
+          selectedCategory() {
+            this.selectedSubcategory = "";
+            this.subcategories = [];
+            this.images = [];
+            if (this.selectedCategory && this.selectedCategory !== "new") {
+              this.loadSubcategories();
+            }
+          },
+          selectedSubcategory() {
+            this.images = [];
+            if (
+              this.selectedSubcategory &&
+              this.selectedSubcategory !== "new"
+            ) {
+              this.loadImages();
+            }
+          },
+        },
+        mounted() {
+          firebase.auth().onAuthStateChanged((user) => {
+            this.isLoggedIn = !!user;
+            this.currentUser = user;
+            if (user) {
+              this.loadCategories();
+            }
+          });
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

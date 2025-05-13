@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portofoliu Fotograf</title>
+    <link rel="stylesheet" href="look.css" />
+  </head>
+  <body>
+    <div class="top-bar">
+      <span
+        >0741 940 601 | bookaphotoshoot@gmail.com | Luni - Duminică: 08:00 -
+        18:00</span
+      >
+    </div>
+    <header>
+      <div class="navbar">
+        <div class="logo"></div>
+        <nav>
+          <a href="#">ACASĂ</a>
+          <a href="#">DESPRE MINE</a>
+          <a href="#">PORTOFOLIU</a>
+          <a href="#">TESTIMONIALE</a>
+          <a href="#">BLOG</a>
+          <a href="#">CONTACT</a>
+        </nav>
+        <a href="#" class="cta">REZERVĂ DATA</a>
+      </div>
+      <div class="hero">
+        <img
+          src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1200&q=80"
+          alt="Hero"
+        />
+        <div class="hero-content">
+          <h1>Portofoliu</h1>
+          <p>Tudor Sebastian Fotograf <b>Portofoliu</b></p>
+        </div>
+      </div>
+    </header>
+    <div class="filters">
+      <button class="active" onclick="filterGallery('all')">All</button>
+      <button onclick="filterGallery('cununie')">Cununie</button>
+      <button onclick="filterGallery('nunta')">Nunta</button>
+      <button onclick="filterGallery('trash')">Trash The Dress</button>
+    </div>
+    <div class="gallery">
+      <div class="gallery-item" data-category="nunta">
+        <img
+          src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
+          alt="Nunta Adriana&Cristian"
+        />
+        <div class="caption">Nunta Adriana&amp;Cristian</div>
+      </div>
+      <div class="gallery-item" data-category="cununie">
+        <img
+          src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=80"
+          alt="CUNUNIE NARCISA&ALEXANDRU"
+        />
+        <div class="caption">CUNUNIE NARCISA&amp;ALEXANDRU</div>
+      </div>
+      <div class="gallery-item" data-category="trash">
+        <img
+          src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80"
+          alt="Trash The Dress Miruna&Bogdan"
+        />
+        <div class="caption">Trash The Dress Miruna&amp;Bogdan</div>
+      </div>
+      <div class="gallery-item" data-category="nunta">
+        <img
+          src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+          alt="Nunta Andrei&Ioana"
+        />
+        <div class="caption">Nunta Andrei&amp;Ioana</div>
+      </div>
+      <div class="gallery-item" data-category="cununie">
+        <img
+          src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80"
+          alt="CUNUNIE MARIA&VLAD"
+        />
+        <div class="caption">CUNUNIE MARIA&amp;VLAD</div>
+      </div>
+      <div class="gallery-item" data-category="trash">
+        <img
+          src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80"
+          alt="Trash The Dress Ana&Mihai"
+        />
+        <div class="caption">Trash The Dress Ana&amp;Mihai</div>
+      </div>
+    </div>
+    <div class="whatsapp-float">
+      <a href="https://wa.me/40741940601" target="_blank">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+          alt="WhatsApp"
+        />
+        Scrie-mi pe WhatsApp!
+      </a>
+    </div>
+    <script>
+      function filterGallery(category) {
+        document
+          .querySelectorAll(".filters button")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.querySelectorAll(".filters button").forEach((btn) => {
+          if (
+            btn.textContent.trim().toLowerCase() === category.toLowerCase() ||
+            (category === "all" && btn.textContent === "All")
+          ) {
+            btn.classList.add("active");
+          }
+        });
+        document.querySelectorAll(".gallery-item").forEach((item) => {
+          if (category === "all" || item.dataset.category === category) {
+            item.style.display = "";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+      window.onload = function () {
+        filterGallery("all");
+      };
+    </script>
+  </body>
+</html>

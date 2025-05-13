@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Fotografie</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Header/Navigation -->
+    <header class="bg-white shadow-md">
+      <nav class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+          <!-- Logo/Nume -->
+          <div class="text-2xl font-bold">
+            <a href="#" class="text-gray-800">Tudor Sebastian Fotograf</a>
+          </div>
+
+          <!-- Navigation Links -->
+          <div class="hidden md:flex space-x-8">
+            <a href="#" class="text-gray-600 hover:text-gray-900">Acasă</a>
+            <a href="#despre" class="text-gray-600 hover:text-gray-900"
+              >Despre Mine</a
+            >
+            <a href="#portofoliu" class="text-gray-600 hover:text-gray-900"
+              >Portofoliu</a
+            >
+            <a href="#testimoniale" class="text-gray-600 hover:text-gray-900"
+              >Testimoniale</a
+            >
+            <a href="#contact" class="text-gray-600 hover:text-gray-900"
+              >Contact</a
+            >
+          </div>
+
+          <!-- Calendar Button -->
+          <button
+            onclick="openCalendar()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Verifică Disponibilitatea
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen">
+      <div class="absolute inset-0 bg-black opacity-50"></div>
+      <div
+        class="relative h-full flex items-center justify-center text-center text-white"
+      >
+        <div class="max-w-3xl px-4">
+          <h1 class="text-5xl font-bold mb-4">Capturând Momentul Perfect</h1>
+          <p class="text-xl mb-8">
+            Fotografie profesională pentru evenimente speciale
+          </p>
+          <a
+            href="#portofoliu"
+            class="bg-white text-gray-900 px-8 py-3 rounded-md hover:bg-gray-100"
+          >
+            Vezi Portofoliul
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Despre Mine Section -->
+    <section id="despre" class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Despre Mine</h2>
+        <div class="max-w-3xl mx-auto text-center">
+          <p class="text-gray-600 mb-6">[Aici vei adăuga descrierea ta]</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portofoliu Section -->
+    <section id="portofoliu" class="py-20 bg-gray-100">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Portofoliu</h2>
+
+        <!-- Categorii Portofoliu -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <!-- Nunti -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+            <div class="h-64 bg-gray-200">
+              <!-- Aici va fi imaginea de copertă pentru nunti -->
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold mb-2">Nunți</h3>
+              <p class="text-gray-600 mb-4">
+                Capturăm momentele speciale din ziua nunții tale
+              </p>
+              <a href="#nunti" class="text-blue-600 hover:text-blue-800"
+                >Vezi Galeria →</a
+              >
+            </div>
+          </div>
+
+          <!-- Majorate -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+            <div class="h-64 bg-gray-200">
+              <!-- Aici va fi imaginea de copertă pentru majorate -->
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold mb-2">Majorate</h3>
+              <p class="text-gray-600 mb-4">
+                Imortalizăm ziua majoratului tău în imagini de neuitat
+              </p>
+              <a href="#majorate" class="text-blue-600 hover:text-blue-800"
+                >Vezi Galeria →</a
+              >
+            </div>
+          </div>
+
+          <!-- Sedinte Foto -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+            <div class="h-64 bg-gray-200">
+              <!-- Aici va fi imaginea de copertă pentru sedinte foto -->
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold mb-2">Ședințe Foto</h3>
+              <p class="text-gray-600 mb-4">
+                Ședințe foto personalizate pentru orice ocazie
+              </p>
+              <a href="#sedinte" class="text-blue-600 hover:text-blue-800"
+                >Vezi Galeria →</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Galerii Individuale -->
+        <div id="galerii" class="space-y-20">
+          <!-- Galerie Nunti -->
+          <div id="nunti" class="scroll-mt-20">
+            <h3 class="text-2xl font-bold mb-8">Galerie Nunți</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+            </div>
+          </div>
+
+          <!-- Galerie Majorate -->
+          <div id="majorate" class="scroll-mt-20">
+            <h3 class="text-2xl font-bold mb-8">Galerie Majorate</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+            </div>
+          </div>
+
+          <!-- Galerie Sedinte Foto -->
+          <div id="sedinte" class="scroll-mt-20">
+            <h3 class="text-2xl font-bold mb-8">Galerie Ședințe Foto</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+              <div class="bg-gray-200 h-64 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimoniale Section -->
+    <section id="testimoniale" class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Testimoniale</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Testimonial Cards -->
+          <div class="bg-gray-100 p-6 rounded-lg">
+            <p class="text-gray-600 mb-4">"Text testimonial 1"</p>
+            <p class="font-semibold">- Nume Client</p>
+          </div>
+          <div class="bg-gray-100 p-6 rounded-lg">
+            <p class="text-gray-600 mb-4">"Text testimonial 2"</p>
+            <p class="font-semibold">- Nume Client</p>
+          </div>
+          <div class="bg-gray-100 p-6 rounded-lg">
+            <p class="text-gray-600 mb-4">"Text testimonial 3"</p>
+            <p class="font-semibold">- Nume Client</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-100">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Contact</h2>
+        <div class="max-w-2xl mx-auto">
+          <form class="space-y-6">
+            <div>
+              <label class="block text-gray-700 mb-2">Nume</label>
+              <input type="text" class="w-full px-4 py-2 rounded-md border" />
+            </div>
+            <div>
+              <label class="block text-gray-700 mb-2">Email</label>
+              <input type="email" class="w-full px-4 py-2 rounded-md border" />
+            </div>
+            <div>
+              <label class="block text-gray-700 mb-2">Mesaj</label>
+              <textarea
+                class="w-full px-4 py-2 rounded-md border"
+                rows="4"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+            >
+              Trimite Mesaj
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar Modal -->
+    <div
+      id="calendarModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-lg max-w-4xl w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold">Calendar Disponibilitate</h3>
+          <button
+            onclick="closeCalendar()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="aspect-w-16 aspect-h-9 flex items-center justify-center">
+          <span class="text-gray-400"
+            >Aici va fi calendarul integrat ulterior.</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAcvzpjbm_80JVI_tKNFJByS45LPRSyDjo",
+        authDomain: "portfolio-site-bfac2.firebaseapp.com",
+        projectId: "portfolio-site-bfac2",
+        storageBucket: "portfolio-site-bfac2.appspot.com",
+        messagingSenderId: "762123902197",
+        appId: "1:762123902197:web:5ff05f88ea5ead852f79bc",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // Calendar functions
+      function openCalendar() {
+        document.getElementById("calendarModal").classList.remove("hidden");
+        document.getElementById("calendarModal").classList.add("flex");
+      }
+
+      function closeCalendar() {
+        document.getElementById("calendarModal").classList.add("hidden");
+        document.getElementById("calendarModal").classList.remove("flex");
+      }
+
+      // Load images function (păstrăm funcția existentă)
+      async function loadImages(categoryId, subcategoryId) {
+        try {
+          const imagesGrid = document.getElementById("imagesGrid");
+          imagesGrid.innerHTML = "";
+
+          const snapshot = await db
+            .collection("categories")
+            .doc(categoryId)
+            .collection("subcategories")
+            .doc(subcategoryId)
+            .collection("images")
+            .get();
+
+          snapshot.forEach((doc) => {
+            const imageData = doc.data();
+            const imageDiv = document.createElement("div");
+            imageDiv.className = "relative group";
+            imageDiv.innerHTML = `
+                        <img src="${imageData.url}" 
+                             class="w-full h-48 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                             onclick="openImageModal('${imageData.url}')">
+                    `;
+            imagesGrid.appendChild(imageDiv);
+          });
+        } catch (error) {
+          console.error("Error loading images:", error);
+        }
+      }
+
+      // Image modal function
+      function openImageModal(imageUrl) {
+        const modal = document.createElement("div");
+        modal.className =
+          "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+        modal.innerHTML = `
+                <div class="relative max-w-4xl max-h-[90vh] p-4">
+                    <img src="${imageUrl}" class="max-w-full max-h-[80vh] object-contain rounded-lg">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700">
+                        ✕
+                    </button>
+                </div>
+            `;
+        document.body.appendChild(modal);
+      }
+    </script>
+  </body>
+</html>
