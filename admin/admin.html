@@ -12,6 +12,33 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Stiluri pentru animații */
+      .modal-enter-active,
+      .modal-leave-active {
+        transition: all 0.3s ease;
+      }
+      .modal-enter-from,
+      .modal-leave-to {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      .page-blur {
+        transition: filter 0.3s ease;
+      }
+      .page-blur-active {
+        filter: blur(5px);
+      }
+      .zoom-image {
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+      .image-container:hover .zoom-image {
+        transform: scale(1.05);
+      }
+      .image-overlay {
+        transition: opacity 0.3s ease;
+      }
+    </style>
   </head>
   <body class="bg-gray-100">
     <div id="app" class="container mx-auto px-4 py-8">
@@ -52,7 +79,11 @@
       </div>
 
       <!-- Admin Panel -->
-      <div v-else class="space-y-8">
+      <div
+        v-else
+        class="space-y-8 page-blur"
+        :class="{'page-blur-active': selectedImage}"
+      >
         <div class="flex justify-between items-center">
           <h1 class="text-3xl font-bold">Panou de Administrare</h1>
           <button
@@ -173,17 +204,22 @@
             v-if="selectedCategory && selectedSubcategory && selectedCategory !== 'new' && selectedSubcategory !== 'new'"
             class="grid grid-cols-1 md:grid-cols-3 gap-4"
           >
-            <div v-for="image in images" :key="image.id" class="relative group">
+            <div
+              v-for="image in images"
+              :key="image.id"
+              class="relative group image-container shadow-md rounded-lg overflow-hidden"
+            >
               <img
                 :src="image.url"
+                :alt="image.name"
                 @click="openImageModal(image)"
-                class="w-full h-48 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                class="w-full h-48 object-cover rounded-lg zoom-image cursor-pointer"
               />
               <div
-                class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+                class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity image-overlay rounded-lg flex items-center justify-center"
               >
                 <button
-                  @click="deleteImage(image.id)"
+                  @click.stop="deleteImage(image.id)"
                   class="bg-red-600 text-white p-2 rounded-md hover:bg-red-700"
                 >
                   Șterge
@@ -195,18 +231,18 @@
           <!-- Image Modal -->
           <div
             v-if="selectedImage"
-            class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+            class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 modal-enter-active"
             @click="closeImageModal"
           >
-            <div class="relative max-w-4xl max-h-[90vh] p-4">
+            <div class="relative max-w-4xl max-h-[90vh] p-4" @click.stop>
               <img
                 :src="selectedImage.url"
-                class="max-w-full max-h-[80vh] object-contain rounded-lg"
-                @click.stop
+                :alt="selectedImage.name"
+                class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl transform transition-all duration-300 scale-100"
               />
               <button
                 @click="closeImageModal"
-                class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
+                class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors duration-200"
               >
                 ✕
               </button>
@@ -220,11 +256,8 @@
           <div class="aspect-w-16 aspect-h-9">
             <iframe
               src="https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_ID"
-              style="border: 0"
-              width="800"
-              height="600"
-              frameborder="0"
-              scrolling="no"
+              title="Calendar"
+              class="w-full h-[600px] border-0"
             >
             </iframe>
           </div>
@@ -234,6 +267,7 @@
         <button
           @click="testDatabase"
           class="bg-blue-500 text-white px-4 py-2 rounded"
+          type="button"
         >
           Testează Bază de Date
         </button>
@@ -339,6 +373,7 @@
                 id: doc.id,
                 ...doc.data(),
               }));
+              console.log("Imagini încărcate:", this.images);
             } catch (error) {
               alert("Eroare la încărcarea imaginilor: " + error.message);
             }
@@ -384,49 +419,103 @@
             if (!files.length) return;
 
             try {
-              // Încărcăm toate fișierele în paralel
-              const uploadPromises = Array.from(files).map((file) => {
-                return new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.onload = async (e) => {
-                    try {
-                      const base64Image = e.target.result;
-                      await firebase
-                        .firestore()
-                        .collection("categories")
-                        .doc(this.selectedCategory)
-                        .collection("subcategories")
-                        .doc(this.selectedSubcategory)
-                        .collection("images")
-                        .add({
-                          url: base64Image,
-                          name: file.name,
-                          uploadedAt:
-                            firebase.firestore.FieldValue.serverTimestamp(),
-                        });
-                      resolve();
-                    } catch (error) {
-                      reject(error);
-                    }
-                  };
-                  reader.onerror = reject;
-                  reader.readAsDataURL(file);
-                });
+              // Creează un obiect FormData pentru a trimite fișierele
+              const formData = new FormData();
+
+              // Adaugă categoria și subcategoria
+              formData.append("category", this.selectedCategory);
+              formData.append("subcategory", this.selectedSubcategory);
+
+              // Adaugă toate fișierele
+              for (let i = 0; i < files.length; i++) {
+                formData.append("images[]", files[i]);
+              }
+
+              // Trimite fișierele la serverul PHP
+              const response = await fetch("upload.php", {
+                method: "POST",
+                body: formData,
               });
 
-              // Așteptăm să se încarce toate fișierele
-              await Promise.all(uploadPromises);
+              // Procesează răspunsul
+              const result = await response.json();
+              console.log("Răspuns de la server:", result);
 
-              // Reîncărcăm imaginile după ce toate s-au încărcat
-              await this.loadImages();
+              if (result.success) {
+                // Adăugăm fiecare imagine în Firebase Firestore pentru a păstra structura de date
+                const uploadPromises = result.files.map((file) => {
+                  return firebase
+                    .firestore()
+                    .collection("categories")
+                    .doc(this.selectedCategory)
+                    .collection("subcategories")
+                    .doc(this.selectedSubcategory)
+                    .collection("images")
+                    .add({
+                      url: file.url,
+                      name: file.name,
+                      path: file.path,
+                      uploadedAt:
+                        firebase.firestore.FieldValue.serverTimestamp(),
+                    });
+                });
+
+                // Așteptăm să se finalizeze toate operațiunile Firestore
+                await Promise.all(uploadPromises);
+
+                // Reîncărcăm imaginile
+                await this.loadImages();
+
+                alert(
+                  `Au fost încărcate ${result.files.length} imagini cu succes.`
+                );
+              } else {
+                alert(`Eroare: ${result.message}`);
+              }
             } catch (error) {
               alert("Eroare la încărcarea imaginilor: " + error.message);
+              console.error("Eroare la încărcarea imaginilor:", error);
             }
           },
           async deleteImage(imageId) {
             if (!confirm("Sigur doriți să ștergeți această imagine?")) return;
 
             try {
+              // Obține informațiile despre imagine din Firestore înainte de a o șterge
+              const imageDoc = await firebase
+                .firestore()
+                .collection("categories")
+                .doc(this.selectedCategory)
+                .collection("subcategories")
+                .doc(this.selectedSubcategory)
+                .collection("images")
+                .doc(imageId)
+                .get();
+
+              if (imageDoc.exists) {
+                const imageData = imageDoc.data();
+
+                // Dacă există calea fișierului, trimite cerere pentru ștergerea de pe server
+                if (imageData.path) {
+                  // Creează un FormData pentru a trimite informațiile la server
+                  const formData = new FormData();
+                  formData.append("action", "delete");
+                  formData.append("image_path", imageData.path);
+
+                  // Trimite cererea de ștergere la un script PHP
+                  fetch("delete_image.php", {
+                    method: "POST",
+                    body: formData,
+                  }).catch((error) => {
+                    console.error(
+                      "Eroare la ștergerea fișierului de pe server:",
+                      error
+                    );
+                  });
+                }
+              }
+
+              // Șterge documentul din Firestore
               await firebase
                 .firestore()
                 .collection("categories")
@@ -436,6 +525,7 @@
                 .collection("images")
                 .doc(imageId)
                 .delete();
+
               this.loadImages();
             } catch (error) {
               alert("Eroare la ștergerea imaginii: " + error.message);

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portofoliu Fotograf</title>
     <link rel="stylesheet" href="look.css" />
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   </head>
   <body>
     <div class="top-bar">
@@ -19,7 +22,7 @@
         <nav>
           <a href="#">ACASĂ</a>
           <a href="#">DESPRE MINE</a>
-          <a href="#">PORTOFOLIU</a>
+          <a href="#" class="active">PORTOFOLIU</a>
           <a href="#">TESTIMONIALE</a>
           <a href="#">BLOG</a>
           <a href="#">CONTACT</a>
@@ -37,56 +40,22 @@
         </div>
       </div>
     </header>
-    <div class="filters">
+    <div class="filters" id="categoriesFilters">
       <button class="active" onclick="filterGallery('all')">All</button>
-      <button onclick="filterGallery('cununie')">Cununie</button>
-      <button onclick="filterGallery('nunta')">Nunta</button>
-      <button onclick="filterGallery('trash')">Trash The Dress</button>
+      <!-- Categoriile vor fi încărcate dinamic -->
     </div>
-    <div class="gallery">
-      <div class="gallery-item" data-category="nunta">
-        <img
-          src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
-          alt="Nunta Adriana&Cristian"
-        />
-        <div class="caption">Nunta Adriana&amp;Cristian</div>
-      </div>
-      <div class="gallery-item" data-category="cununie">
-        <img
-          src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=80"
-          alt="CUNUNIE NARCISA&ALEXANDRU"
-        />
-        <div class="caption">CUNUNIE NARCISA&amp;ALEXANDRU</div>
-      </div>
-      <div class="gallery-item" data-category="trash">
-        <img
-          src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80"
-          alt="Trash The Dress Miruna&Bogdan"
-        />
-        <div class="caption">Trash The Dress Miruna&amp;Bogdan</div>
-      </div>
-      <div class="gallery-item" data-category="nunta">
-        <img
-          src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
-          alt="Nunta Andrei&Ioana"
-        />
-        <div class="caption">Nunta Andrei&amp;Ioana</div>
-      </div>
-      <div class="gallery-item" data-category="cununie">
-        <img
-          src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80"
-          alt="CUNUNIE MARIA&VLAD"
-        />
-        <div class="caption">CUNUNIE MARIA&amp;VLAD</div>
-      </div>
-      <div class="gallery-item" data-category="trash">
-        <img
-          src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80"
-          alt="Trash The Dress Ana&Mihai"
-        />
-        <div class="caption">Trash The Dress Ana&amp;Mihai</div>
+    <div class="gallery" id="galleryContainer">
+      <!-- Imaginile vor fi încărcate dinamic -->
+    </div>
+
+    <!-- Modal pentru imagini -->
+    <div id="imageModal" class="image-modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-modal" onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" src="" alt="Imagine mărită" />
       </div>
     </div>
+
     <div class="whatsapp-float">
       <a href="https://wa.me/40741940601" target="_blank">
         <img
@@ -96,11 +65,259 @@
         Scrie-mi pe WhatsApp!
       </a>
     </div>
+
+    <style>
+      /* Stiluri pentru modal */
+      .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.9);
+        animation: fadeIn 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .page-blur {
+        filter: blur(0px);
+        transition: filter 0.3s ease;
+      }
+
+      body.modal-active .page-blur {
+        filter: blur(5px);
+      }
+
+      .modal-content {
+        margin: 5% auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+        animation: zoom 0.3s;
+      }
+
+      @keyframes zoom {
+        from {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .modal-content img {
+        width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+      }
+
+      .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+        cursor: pointer;
+      }
+
+      .close-modal:hover {
+        color: #bbb;
+      }
+    </style>
+
     <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAcvzpjbm_80JVI_tKNFJByS45LPRSyDjo",
+        authDomain: "portfolio-site-bfac2.firebaseapp.com",
+        projectId: "portfolio-site-bfac2",
+        storageBucket: "portfolio-site-bfac2.appspot.com",
+        messagingSenderId: "762123902197",
+        appId: "1:762123902197:web:5ff05f88ea5ead852f79bc",
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // Încarcă categoriile și filtrele
+      async function loadCategories() {
+        try {
+          const categoriesSnapshot = await db.collection("categories").get();
+          const filtersContainer = document.getElementById("categoriesFilters");
+
+          // Păstrează butonul "All"
+          const existingButtons = document.querySelectorAll(
+            "#categoriesFilters button"
+          );
+          for (let i = 1; i < existingButtons.length; i++) {
+            existingButtons[i].remove();
+          }
+
+          // Adaugă categoriile din Firebase
+          categoriesSnapshot.forEach((categoryDoc) => {
+            const categoryName = categoryDoc.id;
+            const button = document.createElement("button");
+            button.textContent = categoryName;
+            button.onclick = function () {
+              filterGallery(categoryName.toLowerCase());
+              loadImagesForCategory(categoryName);
+            };
+            filtersContainer.appendChild(button);
+          });
+
+          // Încarcă toate imaginile inițial
+          loadAllImages();
+        } catch (error) {
+          console.error("Eroare la încărcarea categoriilor:", error);
+        }
+      }
+
+      // Încarcă toate imaginile din toate categoriile și subcategoriile
+      async function loadAllImages() {
+        try {
+          const galleryContainer = document.getElementById("galleryContainer");
+          galleryContainer.innerHTML = ""; // Curăță galeria
+
+          const categoriesSnapshot = await db.collection("categories").get();
+
+          for (const categoryDoc of categoriesSnapshot.docs) {
+            const categoryName = categoryDoc.id;
+            const subcategoriesSnapshot = await db
+              .collection("categories")
+              .doc(categoryName)
+              .collection("subcategories")
+              .get();
+
+            for (const subcategoryDoc of subcategoriesSnapshot.docs) {
+              const subcategoryName = subcategoryDoc.id;
+
+              // Încarcă imaginile pentru această subcategorie
+              const imagesSnapshot = await db
+                .collection("categories")
+                .doc(categoryName)
+                .collection("subcategories")
+                .doc(subcategoryName)
+                .collection("images")
+                .orderBy("uploadedAt", "desc")
+                .get();
+
+              imagesSnapshot.forEach((imageDoc) => {
+                const imageData = imageDoc.data();
+
+                // Creează elementul pentru galerie
+                const galleryItem = document.createElement("div");
+                galleryItem.className = "gallery-item";
+                galleryItem.setAttribute(
+                  "data-category",
+                  categoryName.toLowerCase()
+                );
+
+                galleryItem.innerHTML = `
+                  <img src="${imageData.url}" alt="${
+                  imageData.name || subcategoryName
+                }" onclick="openImageModal('${imageData.url}', '${
+                  imageData.name || subcategoryName
+                }')">
+                  <div class="caption">${subcategoryName} ${
+                  imageData.name ? "- " + imageData.name : ""
+                }</div>
+                `;
+
+                galleryContainer.appendChild(galleryItem);
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Eroare la încărcarea imaginilor:", error);
+        }
+      }
+
+      // Încarcă imaginile doar pentru o anumită categorie
+      async function loadImagesForCategory(categoryName) {
+        if (categoryName.toLowerCase() === "all") {
+          loadAllImages();
+          return;
+        }
+
+        try {
+          const galleryContainer = document.getElementById("galleryContainer");
+          galleryContainer.innerHTML = ""; // Curăță galeria
+
+          const subcategoriesSnapshot = await db
+            .collection("categories")
+            .doc(categoryName)
+            .collection("subcategories")
+            .get();
+
+          for (const subcategoryDoc of subcategoriesSnapshot.docs) {
+            const subcategoryName = subcategoryDoc.id;
+
+            // Încarcă imaginile pentru această subcategorie
+            const imagesSnapshot = await db
+              .collection("categories")
+              .doc(categoryName)
+              .collection("subcategories")
+              .doc(subcategoryName)
+              .collection("images")
+              .orderBy("uploadedAt", "desc")
+              .get();
+
+            imagesSnapshot.forEach((imageDoc) => {
+              const imageData = imageDoc.data();
+
+              // Creează elementul pentru galerie
+              const galleryItem = document.createElement("div");
+              galleryItem.className = "gallery-item";
+              galleryItem.setAttribute(
+                "data-category",
+                categoryName.toLowerCase()
+              );
+
+              galleryItem.innerHTML = `
+                <img src="${imageData.url}" alt="${
+                imageData.name || subcategoryName
+              }" onclick="openImageModal('${imageData.url}', '${
+                imageData.name || subcategoryName
+              }')">
+                <div class="caption">${subcategoryName} ${
+                imageData.name ? "- " + imageData.name : ""
+              }</div>
+              `;
+
+              galleryContainer.appendChild(galleryItem);
+            });
+          }
+        } catch (error) {
+          console.error(
+            "Eroare la încărcarea imaginilor pentru categoria:",
+            categoryName,
+            error
+          );
+        }
+      }
+
+      // Filtrează galeriile în funcție de categorie
       function filterGallery(category) {
         document
           .querySelectorAll(".filters button")
           .forEach((btn) => btn.classList.remove("active"));
+
         document.querySelectorAll(".filters button").forEach((btn) => {
           if (
             btn.textContent.trim().toLowerCase() === category.toLowerCase() ||
@@ -109,16 +326,52 @@
             btn.classList.add("active");
           }
         });
-        document.querySelectorAll(".gallery-item").forEach((item) => {
-          if (category === "all" || item.dataset.category === category) {
-            item.style.display = "";
-          } else {
-            item.style.display = "none";
-          }
-        });
+
+        if (category === "all") {
+          loadAllImages();
+        } else {
+          document.querySelectorAll(".gallery-item").forEach((item) => {
+            if (category === "all" || item.dataset.category === category) {
+              item.style.display = "";
+            } else {
+              item.style.display = "none";
+            }
+          });
+        }
       }
+
+      // Deschide modalul cu imaginea
+      function openImageModal(imageSrc, imageAlt) {
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImage");
+
+        modalImg.src = imageSrc;
+        modalImg.alt = imageAlt;
+
+        modal.style.display = "block";
+        document.body.classList.add("modal-active");
+        document.documentElement.style.overflow = "hidden";
+      }
+
+      // Închide modalul
+      function closeImageModal() {
+        const modal = document.getElementById("imageModal");
+        modal.style.display = "none";
+        document.body.classList.remove("modal-active");
+        document.documentElement.style.overflow = "";
+      }
+
+      // Închide modalul la click în afara imaginii
+      window.onclick = function (event) {
+        const modal = document.getElementById("imageModal");
+        if (event.target === modal) {
+          closeImageModal();
+        }
+      };
+
+      // Inițializează pagina
       window.onload = function () {
-        filterGallery("all");
+        loadCategories();
       };
     </script>
   </body>

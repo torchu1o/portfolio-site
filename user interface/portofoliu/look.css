@@ -1,4 +1,8 @@
 /* Resetare și stiluri generale */
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -63,7 +67,7 @@ nav {
 
 nav a {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: color 0.3s;
@@ -72,10 +76,11 @@ nav a {
 nav a:hover, 
 nav a.active {
   color: #caa979;
+  font-weight: 500;
 }
 
 .cta {
-  background-color: #caa979;
+  background-color: #000000;
   color: white;
   border: none;
   border-radius: 30px;
@@ -83,7 +88,6 @@ nav a.active {
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
   transition: background-color 0.3s;
 }
 
@@ -124,8 +128,8 @@ nav a.active {
 }
 
 .hero-content p {
-  font-size: 16px;
-  opacity: 0.9;
+  font-size: 13px;
+  opacity: 0.7;
 }
 
 /* Filtre */
@@ -180,6 +184,7 @@ nav a.active {
 
 .gallery-item {
   position: relative;
+  border-radius: 15px;
   overflow: hidden;
   height: 350px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -204,7 +209,7 @@ nav a.active {
   background-color: white;
   padding: 15px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 200;
   text-align: center;
   text-transform: uppercase;
 }
@@ -220,13 +225,14 @@ nav a.active {
 .whatsapp-float a {
   display: flex;
   align-items: center;
-  background-color: #25d366;
-  color: white;
+  background-color: #fdfffd;
+  color: #000000;
   padding: 12px 25px;
   border-radius: 50px;
   font-weight: 600;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s;
+  font-family: sans-serif;
 }
 
 .whatsapp-float a:hover {
